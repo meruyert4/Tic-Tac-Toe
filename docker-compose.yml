@@ -1,20 +1,25 @@
-version: '3.8'
-
 services:
-  tic-tac-toe:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    depends_on:
+      - redis
     environment:
+      - REDIS_ADDR=redis:6379
       - PORT=8080
+    restart: always
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
     volumes:
-      - ./frontend:/app/frontend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:8080"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
 
   redis:
     image: redis:alpine
@@ -22,7 +27,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    restart: unless-stopped
+    restart: always
 
 volumes:
   redis_data:

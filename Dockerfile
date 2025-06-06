@@ -1,20 +1,23 @@
-FROM golang:1.23
+FROM golang:1.23-alpine AS builder
+
+RUN apk add --no-cache git
 
 WORKDIR /app
 
-COPY backend/go.mod backend/go.sum ./
+COPY go.mod go.sum ./
+
 RUN go mod download
 
-COPY backend/ .
+COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o tic-tac-toe .
+RUN go build -o tic-tac-toe ./backend/cmd
 
 FROM alpine:latest
 
 WORKDIR /app
 
 COPY --from=builder /app/tic-tac-toe .
-COPY frontend/ ./frontend/
+COPY frontend ./frontend
 
 EXPOSE 8080
 
