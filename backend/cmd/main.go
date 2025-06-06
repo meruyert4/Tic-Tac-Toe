@@ -21,8 +21,13 @@ func main() {
 
 	// Setup HTTP routes
 	http.HandleFunc("/api/health", handlers.HealthCheck)
-	http.Handle("/ws", websocket.Handler(handlers.WebSocketHandler))
 
+	// WebSocket handler with cookie support
+	http.Handle("/ws", websocket.Handler(func(ws *websocket.Conn) {
+		handlers.WebSocketHandler(ws)
+	}))
+
+	// Static files
 	fs := http.FileServer(http.Dir("./frontend"))
 	http.Handle("/", fs)
 

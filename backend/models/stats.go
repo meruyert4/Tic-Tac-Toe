@@ -1,6 +1,6 @@
 package models
 
-type GameStats struct {
+type QuickGameStats struct {
 	TotalGames  int `json:"totalgames"`
 	ActiveGames int `json:"activegames"`
 	OnlineUsers int `json:"onlineusers"`
@@ -16,4 +16,9 @@ type PlayerStats struct {
 type OfflineStats struct {
 	PlayerStats
 	CurrentStreak int `json:"currentstreak"`
+}
+
+type ComputerStats struct {
+	PlayerWin   int `json:"playerwin"`
+	ComputerWin int `json:"computerwin"`
 }

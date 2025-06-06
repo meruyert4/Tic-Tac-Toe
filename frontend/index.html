@@ -5,61 +5,707 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic-Tac-Toe</title>
     <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --light-text: #fff;
+            --cell-size: 100px;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            min-height: 100vh;
         }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        .header h1 {
+            color: var(--secondary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .user-info {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-info h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        
+        .game-modes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        
+        .game-btn {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .game-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         #status {
             margin: 20px 0;
             font-weight: bold;
+            font-size: 1.2rem;
+            min-height: 24px;
+            text-align: center;
         }
+        
+        #game-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
         #game-board {
             display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-gap: 5px;
+            grid-template-columns: repeat(3, var(--cell-size));
+            grid-gap: 8px;
             margin-bottom: 20px;
         }
+        
         .cell {
-            width: 100px;
-            height: 100px;
-            border: 1px solid #000;
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: white;
+            border: 2px solid var(--secondary-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 36px;
+            font-size: 3rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .cell:hover {
+            background-color: #f0f8ff;
+        }
+        
+        .cell.x {
+            color: var(--primary-color);
+        }
+        
+        .cell.o {
+            color: #e53935;
+        }
+        
+        .game-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background-color: var(--accent-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
         }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 90%;
+            max-width: 900px;
+            margin-top: 20px;
+        }
+        
+        .stats-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-box h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+        }
+        
+        .stat-item {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            #game-board {
+                grid-template-columns: repeat(3, 80px);
+            }
+            
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Tic-Tac-Toe</h1>
+    <div class="header">
+        <h1>Tic-Tac-Toe</h1>
+    </div>
+    
+    <div class="user-info">
+        <h2 id="username">Guest</h2>
+        <div id="player-stats">
+            <div class="stat-item"><span>Wins:</span> <span id="wins">0</span></div>
+            <div class="stat-item"><span>Losses:</span> <span id="losses">0</span></div>
+            <div class="stat-item"><span>Draws:</span> <span id="draws">0</span></div>
+            <div class="stat-item"><span>Total Games:</span> <span id="total-games">0</span></div>
+        </div>
+    </div>
+    
+    <div class="game-modes">
+        <button id="quickGameBtn" class="game-btn">Quick Game</button>
+        <button id="offlineGameBtn" class="game-btn">Offline Game</button>
+        <button id="computerGameBtn" class="game-btn">Play vs Computer</button>
+    </div>
+    
     <div id="status">Connecting to server...</div>
     
-    <div>
-        <button id="quickGameBtn">Quick Game</button>
-        <button id="offlineGameBtn">Offline Game</button>
+    <div id="game-container">
+        <div id="game-board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        
+        <div class="game-actions">
+            <button id="playAgainBtn" class="action-btn" disabled>Play Again</button>
+            <button id="mainMenuBtn" class="action-btn">Main Menu</button>
+        </div>
+    </div>
+    
+    <div class="stats-container">
+        <div class="stats-box">
+            <h3>Quick Game Stats</h3>
+            <div class="stat-item"><span>Total Games:</span> <span id="quick-total">0</span></div>
+            <div class="stat-item"><span>Active Games:</span> <span id="quick-active">0</span></div>
+            <div class="stat-item"><span>Online Players:</span> <span id="quick-online">0</span></div>
+        </div>
+        
+        <div class="stats-box">
+            <h3>Offline Stats</h3>
+            <div class="stat-item"><span>Wins:</span> <span id="offline-wins">0</span></div>
+            <div class="stat-item"><span>Losses:</span> <span id="offline-losses">0</span></div>
+            <div class="stat-item"><span>Draws:</span> <span id="offline-draws">0</span></div>
+            <div class="stat-item"><span>Current Streak:</span> <span id="offline-streak">0</span></div>
+        </div>
+        
+        <div class="stats-box">
+            <h3>Computer Stats</h3>
+            <div class="stat-item"><span>Player Wins:</span> <span id="computer-player">0</span></div>
+            <div class="stat-item"><span>Computer Wins:</span> <span id="computer-ai">0</span></div>
+            <div class="stat-item"><span>Win Rate:</span> <span id="computer-rate">0%</span></div>
+        </div>
     </div>
 
-    <div id="game-board" style="display: none;">
-        <div class="cell" data-index="0"></div>
-        <div class="cell" data-index="1"></div>
-        <div class="cell" data-index="2"></div>
-        <div class="cell" data-index="3"></div>
-        <div class="cell" data-index="4"></div>
-        <div class="cell" data-index="5"></div>
-        <div class="cell" data-index="6"></div>
-        <div class="cell" data-index="7"></div>
-        <div class="cell" data-index="8"></div>
-    </div>
-
-    <script src="scripts/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM elements
+            const statusEl = document.getElementById('status');
+            const quickGameBtn = document.getElementById('quickGameBtn');
+            const offlineGameBtn = document.getElementById('offlineGameBtn');
+            const computerGameBtn = document.getElementById('computerGameBtn');
+            const playAgainBtn = document.getElementById('playAgainBtn');
+            const mainMenuBtn = document.getElementById('mainMenuBtn');
+            const gameContainer = document.getElementById('game-container');
+            const gameBoard = document.getElementById('game-board');
+            const cells = document.querySelectorAll('.cell');
+            const usernameEl = document.getElementById('username');
+            
+            // Game state
+            let currentGameMode = null; // 'quick', 'offline', 'computer'
+            let currentPlayerSymbol = '';
+            let gameActive = false;
+            let currentGameId = '';
+            let playerStats = {
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                totalGames: 0
+            };
+            
+            // WebSocket connection
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const wsUrl = wsProtocol + window.location.host + '/ws';
+            const socket = new WebSocket(wsUrl);
+            
+            // Initialize WebSocket handlers
+            socket.onopen = () => {
+                statusEl.textContent = 'Connected to server';
+                console.log('WebSocket connected');
+            };
+            
+            socket.onmessage = (event) => {
+                console.log('Message from server:', event.data);
+                try {
+                    const message = JSON.parse(event.data);
+                    handleServerMessage(message);
+                } catch (e) {
+                    console.error('Error parsing message:', e);
+                }
+            };
+            
+            socket.onclose = () => {
+                statusEl.textContent = 'Disconnected from server';
+                disableGameButtons();
+            };
+            
+            socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                statusEl.textContent = 'Connection error';
+            };
+            
+            // Button event listeners
+            quickGameBtn.addEventListener('click', () => startQuickGame());
+            offlineGameBtn.addEventListener('click', () => startOfflineGame());
+            computerGameBtn.addEventListener('click', () => startComputerGame());
+            playAgainBtn.addEventListener('click', () => handlePlayAgain());
+            mainMenuBtn.addEventListener('click', () => returnToMainMenu());
+            
+            // Cell click handler
+            cells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    if (!gameActive || cell.textContent !== '') return;
+                    
+                    const index = cell.dataset.index;
+                    makeMove(index);
+                });
+            });
+            
+            // Message handling
+            function handleServerMessage(message) {
+                switch (message.type) {
+                    case 'welcome':
+                        handleWelcome(message.payload);
+                        break;
+                    case 'searching':
+                        handleSearching();
+                        break;
+                    case 'gameStart':
+                        handleGameStart(message.payload);
+                        break;
+                    case 'gameState':
+                        updateGameState(message.payload);
+                        break;
+                    case 'gameOver':
+                        handleGameOver(message.payload);
+                        break;
+                    case 'opponentDisconnected':
+                        handleOpponentDisconnected();
+                        break;
+                    case 'searchCancelled':
+                        handleSearchCancelled();
+                        break;
+                    case 'statsUpdate':
+                        updateStats(message.payload);
+                        break;
+                    default:
+                        console.warn('Unknown message type:', message.type);
+                }
+            }
+            
+            function handleWelcome(payload) {
+                usernameEl.textContent = payload.nickname;
+                updateStats(payload.stats);
+            }
+            
+            function handleSearching() {
+                statusEl.textContent = 'Searching for opponent...';
+                quickGameBtn.disabled = true;
+            }
+            
+            function handleGameStart(payload) {
+                currentGameMode = 'quick';
+                currentGameId = payload.gameId;
+                currentPlayerSymbol = payload.yourSymbol;
+                gameActive = true;
+                
+                statusEl.textContent = `Game started! You're ${currentPlayerSymbol}. ${payload.yourTurn ? 'Your turn!' : 'Waiting for opponent...'}`;
+                gameContainer.style.display = 'flex';
+                
+                // Highlight the board if it's our turn
+                if (payload.yourTurn) {
+                    gameBoard.style.pointerEvents = 'auto';
+                } else {
+                    gameBoard.style.pointerEvents = 'none';
+                }
+            }
+            
+            function updateGameState(payload) {
+                // Update board
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        const index = i * 3 + j;
+                        cells[index].textContent = payload.board[i][j] || '';
+                        cells[index].className = 'cell ' + (payload.board[i][j] || '').toLowerCase();
+                    }
+                }
+                
+                // Update turn status
+                const isMyTurn = payload.current === currentPlayerSymbol;
+                gameBoard.style.pointerEvents = isMyTurn ? 'auto' : 'none';
+                
+                if (payload.gameOver) {
+                    handleGameOver(payload);
+                } else {
+                    statusEl.textContent = isMyTurn ? 'Your turn!' : 'Waiting for opponent...';
+                }
+            }
+            
+            function handleGameOver(payload) {
+                gameActive = false;
+                playAgainBtn.disabled = false;
+                gameBoard.style.pointerEvents = 'none';
+                
+                if (payload.result === 'win') {
+                    statusEl.textContent = 'You won!';
+                } else if (payload.result === 'loss') {
+                    statusEl.textContent = 'You lost!';
+                } else {
+                    statusEl.textContent = 'Game ended in a draw!';
+                }
+            }
+            
+            function handleOpponentDisconnected() {
+                gameActive = false;
+                statusEl.textContent = 'Opponent disconnected. Returning to main menu...';
+                setTimeout(returnToMainMenu, 2000);
+            }
+            
+            function handleSearchCancelled() {
+                quickGameBtn.disabled = false;
+                statusEl.textContent = 'Search cancelled';
+            }
+            
+            function updateStats(stats) {
+                if (!stats) return;
+                
+                // Player stats
+                if (stats.player) {
+                    playerStats = stats.player;
+                    document.getElementById('wins').textContent = playerStats.wins;
+                    document.getElementById('losses').textContent = playerStats.losses;
+                    document.getElementById('draws').textContent = playerStats.draws;
+                    document.getElementById('total-games').textContent = playerStats.totalGames;
+                }
+                
+                // Quick game stats
+                if (stats.quick) {
+                    document.getElementById('quick-total').textContent = stats.quick.totalGames;
+                    document.getElementById('quick-active').textContent = stats.quick.activeGames;
+                    document.getElementById('quick-online').textContent = stats.quick.onlineUsers;
+                }
+                
+                // Offline stats
+                if (stats.offline) {
+                    document.getElementById('offline-wins').textContent = stats.offline.wins;
+                    document.getElementById('offline-losses').textContent = stats.offline.losses;
+                    document.getElementById('offline-draws').textContent = stats.offline.draws;
+                    document.getElementById('offline-streak').textContent = stats.offline.currentStreak;
+                }
+                
+                // Computer stats
+                if (stats.computer) {
+                    document.getElementById('computer-player').textContent = stats.computer.playerWin;
+                    document.getElementById('computer-ai').textContent = stats.computer.computerWin;
+                    
+                    const total = stats.computer.playerWin + stats.computer.computerWin;
+                    const winRate = total > 0 ? Math.round((stats.computer.playerWin / total) * 100) : 0;
+                    document.getElementById('computer-rate').textContent = `${winRate}%`;
+                }
+            }
+            
+            // Game mode handlers
+            function startQuickGame() {
+                returnToMainMenu();
+                currentGameMode = 'quick';
+                socket.send(JSON.stringify({ type: 'findGame' }));
+            }
+            
+            function startOfflineGame() {
+                returnToMainMenu();
+                currentGameMode = 'offline';
+                gameActive = true;
+                currentPlayerSymbol = 'X'; // X always starts in offline mode
+                
+                // Clear board
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.className = 'cell';
+                });
+                
+                statusEl.textContent = 'Offline game started. X goes first!';
+                gameContainer.style.display = 'flex';
+                gameBoard.style.pointerEvents = 'auto';
+            }
+            
+            function startComputerGame() {
+                returnToMainMenu();
+                currentGameMode = 'computer';
+                gameActive = true;
+                
+                // Randomly assign who goes first
+                currentPlayerSymbol = Math.random() > 0.5 ? 'X' : 'O';
+                
+                // Clear board
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.className = 'cell';
+                });
+                
+                statusEl.textContent = `Computer game started. You're ${currentPlayerSymbol}. ${currentPlayerSymbol === 'X' ? 'Your turn!' : 'Computer is thinking...'}`;
+                gameContainer.style.display = 'flex';
+                
+                if (currentPlayerSymbol === 'X') {
+                    gameBoard.style.pointerEvents = 'auto';
+                } else {
+                    gameBoard.style.pointerEvents = 'none';
+                    setTimeout(computerMove, 1000);
+                }
+            }
+            
+            // Game actions
+            function makeMove(index) {
+                if (!gameActive) return;
+                
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                
+                switch (currentGameMode) {
+                    case 'quick':
+                        socket.send(JSON.stringify({
+                            type: 'makeMove',
+                            payload: { row, col }
+                        }));
+                        break;
+                    case 'offline':
+                        handleOfflineMove(index);
+                        break;
+                    case 'computer':
+                        handleComputerMove(index);
+                        break;
+                }
+            }
+            
+            function handleOfflineMove(index) {
+                const cell = cells[index];
+                cell.textContent = currentPlayerSymbol;
+                cell.className = `cell ${currentPlayerSymbol.toLowerCase()}`;
+                
+                // Check for win or draw
+                if (checkWin()) {
+                    endOfflineGame(currentPlayerSymbol);
+                    return;
+                } else if (checkDraw()) {
+                    endOfflineGame(null);
+                    return;
+                }
+                
+                // Switch player
+                currentPlayerSymbol = currentPlayerSymbol === 'X' ? 'O' : 'X';
+                statusEl.textContent = `Player ${currentPlayerSymbol}'s turn`;
+            }
+            
+            function handleComputerMove(index) {
+                const cell = cells[index];
+                cell.textContent = currentPlayerSymbol;
+                cell.className = `cell ${currentPlayerSymbol.toLowerCase()}`;
+                
+                // Check for win or draw
+                if (checkWin()) {
+                    endComputerGame(true);
+                    return;
+                } else if (checkDraw()) {
+                    endComputerGame(null);
+                    return;
+                }
+                
+                // Computer's turn
+                gameBoard.style.pointerEvents = 'none';
+                statusEl.textContent = 'Computer is thinking...';
+                
+                setTimeout(computerMove, 1000);
+            }
+            
+            function computerMove() {
+                if (!gameActive) return;
+                
+                // Simple AI: find first empty cell
+                const emptyCells = [];
+                cells.forEach((cell, index) => {
+                    if (cell.textContent === '') {
+                        emptyCells.push(index);
+                    }
+                });
+                
+                if (emptyCells.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * emptyCells.length);
+                    const moveIndex = emptyCells[randomIndex];
+                    
+                    const cell = cells[moveIndex];
+                    cell.textContent = currentPlayerSymbol === 'X' ? 'O' : 'X';
+                    cell.className = `cell ${cell.textContent.toLowerCase()}`;
+                    
+                    // Check for win or draw
+                    if (checkWin()) {
+                        endComputerGame(false);
+                        return;
+                    } else if (checkDraw()) {
+                        endComputerGame(null);
+                        return;
+                    }
+                    
+                    // Player's turn again
+                    currentPlayerSymbol = currentPlayerSymbol === 'X' ? 'O' : 'X';
+                    gameBoard.style.pointerEvents = 'auto';
+                    statusEl.textContent = 'Your turn!';
+                }
+            }
+            
+            function checkWin() {
+                const winningCombinations = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                    [0, 4, 8], [2, 4, 6]             // diagonals
+                ];
+                
+                return winningCombinations.some(combination => {
+                    const [a, b, c] = combination;
+                    return cells[a].textContent !== '' && 
+                           cells[a].textContent === cells[b].textContent && 
+                           cells[b].textContent === cells[c].textContent;
+                });
+            }
+            
+            function checkDraw() {
+                return Array.from(cells).every(cell => cell.textContent !== '');
+            }
+            
+            function endOfflineGame(winner) {
+                gameActive = false;
+                playAgainBtn.disabled = false;
+                gameBoard.style.pointerEvents = 'none';
+                
+                if (winner) {
+                    statusEl.textContent = `Player ${winner} wins!`;
+                } else {
+                    statusEl.textContent = 'Game ended in a draw!';
+                }
+            }
+            
+            function endComputerGame(playerWon) {
+                gameActive = false;
+                playAgainBtn.disabled = false;
+                gameBoard.style.pointerEvents = 'none';
+                
+                if (playerWon === true) {
+                    statusEl.textContent = 'You won against the computer!';
+                } else if (playerWon === false) {
+                    statusEl.textContent = 'Computer won!';
+                } else {
+                    statusEl.textContent = 'Game ended in a draw!';
+                }
+            }
+            
+            function handlePlayAgain() {
+                switch (currentGameMode) {
+                    case 'quick':
+                        socket.send(JSON.stringify({ type: 'playAgain' }));
+                        break;
+                    case 'offline':
+                        startOfflineGame();
+                        break;
+                    case 'computer':
+                        startComputerGame();
+                        break;
+                }
+                
+                playAgainBtn.disabled = true;
+            }
+            
+            function returnToMainMenu() {
+                gameActive = false;
+                currentGameMode = null;
+                gameContainer.style.display = 'none';
+                quickGameBtn.disabled = false;
+                
+                if (currentGameMode === 'quick') {
+                    socket.send(JSON.stringify({ type: 'cancelSearch' }));
+                }
+                
+                statusEl.textContent = 'Select a game mode to start playing';
+            }
+            
+            function disableGameButtons() {
+                quickGameBtn.disabled = true;
+                offlineGameBtn.disabled = true;
+                computerGameBtn.disabled = true;
+            }
+        });
+    </script>
 </body>
 </html>
