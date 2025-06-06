@@ -15,9 +15,10 @@ var (
 )
 
 const (
-	colorReset = "\033[0m"
-	colorRed   = "\033[31m"
-	colorGreen = "\033[32m"
+	colorReset  = "\033[0m"
+	colorRed    = "\033[31m"
+	colorGreen  = "\033[32m"
+	colorYellow = "\033[33m"
 )
 
 func init() {
@@ -34,6 +35,12 @@ func Info(v ...any) {
 func Error(v ...any) {
 	message := fmt.Sprint(v...)
 	coloredMessage := fmt.Sprintf("%s[ERROR] %s%s", colorRed, message, colorReset)
+	errorLogger.Output(2, coloredMessage)
+}
+
+func Warn(v ...any) {
+	message := fmt.Sprint(v...)
+	coloredMessage := fmt.Sprintf("%s[WARN] %s%s", colorYellow, message, colorReset)
 	errorLogger.Output(2, coloredMessage)
 }
 

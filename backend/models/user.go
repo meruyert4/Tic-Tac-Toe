@@ -10,7 +10,7 @@ type User struct {
 }
 
 type UserSession struct {
-	UserId    string          `json:"userid"`
-	SessionId string          `json:"sessionid"`
+	UserID    string          `json:"userId"`
+	SessionID string          `json:"sessionId"`
 	Conn      *websocket.Conn `json:"-"`
 }

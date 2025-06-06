@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"randomname/services"
+	"tic-tac-toe/randomname/services"
 )
 
 func main() {
