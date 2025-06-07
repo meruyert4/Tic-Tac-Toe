@@ -52,7 +52,7 @@ func SetupLogger() (*slog.Logger, *os.File) {
 	logFileName := fmt.Sprintf("logs/log_%s.log", time.Now().Format("20060102_150405"))
 	logFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
-		fmt.Printf("Error creating the logs file: %v\n", err)
+		Info("Error creating the logs file:", err)
 		os.Exit(1)
 	}
 

@@ -51,10 +51,10 @@ func WebSocketHandler(ws *websocket.Conn) {
 	}
 
 	sess := session.GetOrCreateSession(nil, req, ws)
-	if sess == nil {
-		logger.Error("Failed to create session")
-		return
-	}
+	// if sess == nil {
+	// 	logger.Error("Failed to create session")
+	// 	return
+	// }
 
 	// Store connection
 	connMutex.Lock()
@@ -128,9 +128,9 @@ func WebSocketHandler(ws *websocket.Conn) {
 		case "findGame":
 			handleFindGame(sess)
 		case "makeMove":
-			handleMakeMove(sess, msg.Payload)
+			handleMakeMove(&sess, msg.Payload)
 		case "cancelSearch":
-			handleCancelSearch(sess)
+			handleCancelSearch(&sess)
 		case "playAgain":
 			handlePlayAgain(sess)
 		case "heartbeat":
@@ -142,14 +142,14 @@ func WebSocketHandler(ws *websocket.Conn) {
 	}
 }
 
-func handleFindGame(sess *session.UserSession) {
+func handleFindGame(sess models.UserSession) {
 	conn := connections[sess.User.ID]
 	if conn == nil {
 		return
 	}
 
 	// Add player to matchmaking
-	game := game.FindOpponent(sess)
+	game := game.FindOpponent(&sess)
 	if game == nil {
 		// No opponent found yet, waiting
 		sendMessage(conn, WSMessage{
@@ -185,7 +185,7 @@ func handleFindGame(sess *session.UserSession) {
 	}
 }
 
-func handleMakeMove(sess *session.UserSession, payload interface{}) {
+func handleMakeMove(sess *models.UserSession, payload interface{}) {
 	activeGameMux.Lock()
 	defer activeGameMux.Unlock()
 
@@ -271,7 +271,7 @@ func handleMakeMove(sess *session.UserSession, payload interface{}) {
 	}
 }
 
-func handleCancelSearch(sess *session.UserSession) {
+func handleCancelSearch(sess *models.UserSession) {
 	game.CancelSearch((*models.User)(sess.User))
 	if conn, ok := connections[sess.User.ID]; ok {
 		sendMessage(conn, WSMessage{
@@ -281,7 +281,7 @@ func handleCancelSearch(sess *session.UserSession) {
 	}
 }
 
-func handlePlayAgain(sess *session.UserSession) {
+func handlePlayAgain(sess models.UserSession) {
 	handleFindGame(sess)
 }
 

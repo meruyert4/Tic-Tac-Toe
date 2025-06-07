@@ -1,6 +1,10 @@
 package models
 
-import "golang.org/x/net/websocket"
+import (
+	"time"
+
+	"golang.org/x/net/websocket"
+)
 
 type User struct {
 	ID       string `json:"id"`
@@ -10,7 +14,8 @@ type User struct {
 }
 
 type UserSession struct {
-	UserID    string          `json:"userId"`
-	SessionID string          `json:"sessionId"`
-	Conn      *websocket.Conn `json:"-"`
+	SessionID string
+	User      *User
+	Conn      *websocket.Conn
+	CreatedAt time.Time
 }

@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"sync"
 	"tic-tac-toe/backend/models"
-	"tic-tac-toe/backend/session"
 )
 
 type QuickGame struct {
@@ -19,7 +18,6 @@ type QuickGame struct {
 }
 
 var (
-	quickGamePool   = make(map[string]*QuickGame)
 	searchingPlayer *models.User
 	poolMutex       sync.Mutex
 )
@@ -137,7 +135,7 @@ func (g *QuickGame) updateStats(isNewGame bool) {
 	}
 }
 
-func FindOpponent(sess *session.UserSession) *QuickGame {
+func FindOpponent(sess *models.UserSession) *QuickGame {
 	poolMutex.Lock()
 	defer poolMutex.Unlock()
 

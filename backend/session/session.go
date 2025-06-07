@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"tic-tac-toe/backend/models"
 	"tic-tac-toe/randomname/services"
 	"time"
 
@@ -13,25 +14,11 @@ import (
 )
 
 var (
-	sessions   = make(map[string]*UserSession)
+	sessions   = make(map[string]*models.UserSession)
 	sessionMux sync.Mutex
 )
 
-type UserSession struct {
-	SessionID string
-	User      *User
-	Conn      *websocket.Conn
-	CreatedAt time.Time
-}
-
-type User struct {
-	ID       string
-	Nickname string
-	Online   bool
-	InGame   bool
-}
-
-func GetOrCreateSession(w http.ResponseWriter, r *http.Request, ws *websocket.Conn) *UserSession {
+func GetOrCreateSession(w http.ResponseWriter, r *http.Request, ws *websocket.Conn) models.UserSession {
 	sessionMux.Lock()
 	defer sessionMux.Unlock()
 
@@ -44,7 +31,7 @@ func GetOrCreateSession(w http.ResponseWriter, r *http.Request, ws *websocket.Co
 				sess.Conn = ws
 			}
 			sess.User.Online = true
-			return sess
+			return *sess
 		}
 	}
 
@@ -53,9 +40,9 @@ func GetOrCreateSession(w http.ResponseWriter, r *http.Request, ws *websocket.Co
 	userID := "user-" + generateRandomString(8)
 	nickname := services.RandomNickName()
 
-	sess := &UserSession{
+	sess := &models.UserSession{
 		SessionID: sessionID,
-		User: &User{
+		User: &models.User{
 			ID:       userID,
 			Nickname: nickname,
 			Online:   true,
@@ -80,10 +67,10 @@ func GetOrCreateSession(w http.ResponseWriter, r *http.Request, ws *websocket.Co
 		})
 	}
 
-	return sess
+	return *sess
 }
 
-func GetSession(sessionID string) *UserSession {
+func GetSession(sessionID string) *models.UserSession {
 	sessionMux.Lock()
 	defer sessionMux.Unlock()
 	return sessions[sessionID]
